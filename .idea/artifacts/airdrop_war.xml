@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="airdrop:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="airdrop.war">
+      <element id="artifact" artifact-name="airdrop:war exploded" />
+    </root>
+  </artifact>
+</component>
