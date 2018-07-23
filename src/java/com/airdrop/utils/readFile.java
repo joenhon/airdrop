@@ -30,7 +30,7 @@ public class readFile {
 
     public String read(String file,String n){
        // Admin admin=new Admin.build(new HttpService(ethHost));
-        StringBuffer str = new StringBuffer("");;
+        StringBuffer str = new StringBuffer("");
         try {
             Reader reader = new FileReader(file);
             // 这里我们用到了字符操作的BufferedReader类
@@ -91,10 +91,17 @@ public class readFile {
         }
         return str.toString();
     }
-    public static String listRemake0x(List<String> addArray){
+    public static String StringListRemake0x(List<String> addArray){
         StringBuffer stringBuffer=new StringBuffer();
         for (int adi=0;adi<addArray.size();adi++) {
             stringBuffer.append(remake0x(addArray.get(adi)));
+        }
+        return stringBuffer.toString();
+    }
+    public static String BigIntegerListRemake0x(List<BigInteger> addArray){
+        StringBuffer stringBuffer=new StringBuffer();
+        for (int adi=0;adi<addArray.size();adi++) {
+            stringBuffer.append(remake0x(addArray.get(adi).toString(16)));
         }
         return stringBuffer.toString();
     }
@@ -106,15 +113,40 @@ public class readFile {
         return str;
     }
     //60是addres[] ,120是uint256[]
-    public static String adta(String tokenContractAddress,BigInteger value,List<String> addArray){
+    public static String airDropData(String tokenContractAddress,BigInteger value,List<String> addArray){
         StringBuffer stringBuffer=new StringBuffer();
         stringBuffer.append(remake0x(tokenContractAddress)
                 +"0000000000000000000000000000000000000000000000000000000000000060"
                 +Hex(value.toString(16))
                 +Hex(BigInteger.valueOf(addArray.size()).toString(16))
-                +listRemake0x(addArray));
+                +StringListRemake0x(addArray));
         return stringBuffer.toString();
     }
+    public static String airDropValuesData(String tokenContractAddress,BigInteger value,List<String> addArray,List<BigInteger> valArray){
+        StringBuffer stringBuffer=new StringBuffer();
+        stringBuffer.append(remake0x(tokenContractAddress)
+                +"0000000000000000000000000000000000000000000000000000000000000080"
+                +Hex(BigInteger.valueOf((valArray.size()+2)*20).toString())
+                +Hex(value.toString(16))
+                +Hex(BigInteger.valueOf(addArray.size()).toString(16))
+                +StringListRemake0x(addArray)
+                +Hex(BigInteger.valueOf(valArray.size()).toString(16))
+                +BigIntegerListRemake0x(valArray)
+                );
+        return stringBuffer.toString();
+    }
+
+    public static String dataMigrationData(String oldTokenContractAddress,String tokenContractAddress,BigInteger value,List<String> addArray) {
+        StringBuffer stringBuffer=new StringBuffer();
+        stringBuffer.append(remake0x(oldTokenContractAddress)
+                +remake0x(tokenContractAddress)
+                +"0000000000000000000000000000000000000000000000000000000000000080"
+                +Hex(value.toString(16))
+                +Hex(BigInteger.valueOf(addArray.size()).toString(16))
+                +StringListRemake0x(addArray));
+        return stringBuffer.toString();
+    }
+
     public static List<String> fileToList(String path){
         List<String> addressList = new ArrayList<String>();
 

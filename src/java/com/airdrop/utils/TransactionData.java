@@ -28,8 +28,19 @@ public class TransactionData {
         }
         return null;
     }
-    public static String TransactionContractData(String fromAddress, Credentials credentials, String tokenContractAddress, String contractAddress, List<String> addArray, BigInteger GasPrice, BigInteger value){
-        String data=function.pairdrop.getValue()+readFile.adta(tokenContractAddress,value,addArray);
+    public static String airDrop(String fromAddress, Credentials credentials, String tokenContractAddress, String contractAddress, List<String> addArray, BigInteger GasPrice, BigInteger value){
+        String data=function.airdrop.getValue()+readFile.airDropData(tokenContractAddress,value,addArray);
+        return Transaction(fromAddress,GasPrice,contractAddress,data,credentials);
+    }
+    public static String dropValues(String fromAddress, Credentials credentials, String tokenContractAddress, String contractAddress, List<String> addArray,List<BigInteger> valArray , BigInteger GasPrice, BigInteger value){
+        String data=function.airdropValues.getValue()+readFile.airDropValuesData(tokenContractAddress,value,addArray,valArray);
+        return Transaction(fromAddress,GasPrice,contractAddress,data,credentials);
+    }
+    public static String dataMigration(String fromAddress, Credentials credentials,String oldTokenContractAddress,  String tokenContractAddress, String contractAddress, List<String> addArray, BigInteger GasPrice, BigInteger value){
+        String data=function.dataMigration.getValue()+readFile.dataMigrationData(oldTokenContractAddress,tokenContractAddress,value,addArray);
+        return Transaction(fromAddress,GasPrice,contractAddress,data,credentials);
+    }
+    private static String Transaction(String fromAddress,BigInteger GasPrice,String contractAddress,String data,Credentials credentials){
         String transactionHash=null;
         try {
             while (transactionHash==null){

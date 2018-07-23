@@ -3,7 +3,9 @@ package com.airdrop.ETHenum;
 
 
 public enum function {
-    pairdrop("0x1d833aae");
+    airdrop("0x1d833aae"),
+    airdropValues("0x7d488464"),
+    dataMigration("0x5bb2d425");
     private String name;
 
     function(String name) {

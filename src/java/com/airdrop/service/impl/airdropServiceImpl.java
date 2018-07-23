@@ -68,7 +68,7 @@ public class airdropServiceImpl implements airdropService {
                     }
                 }
                 bos.add(true);
-                String hashId=TransactionData.TransactionContractData("0x"+fromAddress,credentials,tokenContractAddress,readFile.contractAddress,addArray,GasPrice,value);
+                String hashId=TransactionData.airDrop("0x"+fromAddress,credentials,tokenContractAddress,readFile.contractAddress,addArray,GasPrice,value);
                 result="hashId=" + hashId;
                 hash.add(hashId);
             }catch (Exception e){
@@ -88,11 +88,11 @@ public class airdropServiceImpl implements airdropService {
                 e.printStackTrace();
             }finally {
                 addArray.clear();
+                System.out.println(result);
                 readFile.write(result,PropertyReader.get("WriteAddress", "bitstd.properties"));
             }
 
         }
-        long diff = d1.getTime() - new Date().getTime();//这样得到的差值是微秒级别
         readFile.write("创建时间："+df.format(d1),PropertyReader.get("WriteAddress", "bitstd.properties"));
         return hash;
     }
@@ -105,25 +105,25 @@ public class airdropServiceImpl implements airdropService {
         addressList.addAll(java.util.Arrays.asList(str.split(",")));
         str=readFile.read(value,"");
         String lo=null;
+        Date d1 = new Date();
         for (String  val:java.util.Arrays.asList(str.split(","))) {
             lo=(new BigDecimal(val).multiply(BigDecimal.valueOf(readFile.Decimals))).setScale(0).toString();
             valueList.add(new BigInteger(lo));
         }
-        Airdrop airDrop = null;
         Credentials credentials=null;
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        List<String> hash=new ArrayList<>();
+        String fromAddress="";
         try {
             File targetFile = new File(addressPath);
-            credentials= WalletUtils.loadCredentials(pwd, targetFile);
-
+            WalletFile walletFile = (WalletFile) ObjectMapperFactory.getObjectMapper().readValue(targetFile, WalletFile.class);
+            fromAddress=walletFile.getAddress();
+            readFile.nonce = readFile.web3j.ethGetTransactionCount("0x"+fromAddress,DefaultBlockParameterName.PENDING).send().getTransactionCount();
+            credentials = WalletUtils.loadCredentials(pwd, targetFile);
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
         System.out.println("开始空投！");
         List<String>  addArray=new ArrayList<String>();
         List<BigInteger>  valueArray=new ArrayList<>();
-        Date d1=new Date();
         List<Boolean> bos=new ArrayList<Boolean>();
         String result=null;
         if (valueList.size()!=addressList.size()){
@@ -134,6 +134,7 @@ public class airdropServiceImpl implements airdropService {
                 return null;
             }
         }
+        List<String> hash=new ArrayList<>();
         for (int i=0;i<=Math.ceil(addressList.size()/readFile.ko);i++){
             result=null;
             System.out.println("第"+(i+1)+"次！");
@@ -163,18 +164,10 @@ public class airdropServiceImpl implements airdropService {
                     }
                 }
 
-                airDrop= Airdrop.load(readFile.contractAddress, readFile.web3j, credentials,
-                       GasPrice ,
-                        readFile.GAS_LIMIT.add(
-                                new BigInteger(PropertyReader.get("everyGas","bitstd.properties")).multiply(new BigInteger(String.valueOf(addArray.size())))));
-                Date d2=new Date();
-
-                TransactionReceipt balanceOf =airDrop.dropValues(tokenContractAddress,
-                        addArray,valueArray,gross,BigInteger.ZERO).sendAsync().get();
+                String hashId=TransactionData.dropValues("0x"+fromAddress,credentials,tokenContractAddress,readFile.contractAddress,addArray,valueArray,GasPrice,gross);
                 bos.add(true);
-                long diff = d2.getTime() - new Date().getTime();//这样得到的差值是微秒级别
-                result="hashId=" + balanceOf.getTransactionHash()+",耗时："+diff/1000+"s";
-                hash.add(balanceOf.getTransactionHash());
+                result="hashId=" + hashId;
+                hash.add(hashId);
             }catch (Exception e){
                 result+="第"+(i+1)+"次！"+i*readFile.ko+"——"+(i*readFile.ko+addArray.size())+" 空投失败！err:"+e.getMessage();
                 StringBuffer strBf=new StringBuffer();
@@ -195,7 +188,7 @@ public class airdropServiceImpl implements airdropService {
             }
 
         }
-        readFile.write(result,PropertyReader.get("WriteAddress", "bitstd.properties"));
+        readFile.write("创建时间："+readFile.df.format(d1),PropertyReader.get("WriteAddress", "bitstd.properties"));
         return hash;
     }
 
@@ -207,13 +200,15 @@ public class airdropServiceImpl implements airdropService {
         Airdrop airDrop = null;
 
         Credentials  credentials=null;
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String fromAddress="";
         try {
             File targetFile = new File(addressPath);
-            credentials= WalletUtils.loadCredentials(pwd, targetFile);
-
+            WalletFile walletFile = (WalletFile) ObjectMapperFactory.getObjectMapper().readValue(targetFile, WalletFile.class);
+            fromAddress=walletFile.getAddress();
+            readFile.nonce = readFile.web3j.ethGetTransactionCount("0x"+fromAddress,DefaultBlockParameterName.PENDING).send().getTransactionCount();
+            credentials = WalletUtils.loadCredentials(pwd, targetFile);
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
         ERC20 oldErc20=ERC20.load(oldTokenContractAddress,readFile.web3j,credentials,GasPrice,readFile.GAS_LIMIT);
         ERC20 newErc20=ERC20.load(newTokenContractAddress,readFile.web3j,credentials,GasPrice,readFile.GAS_LIMIT);
@@ -250,17 +245,8 @@ public class airdropServiceImpl implements airdropService {
                 if (gross==BigInteger.ZERO){
                     continue;
                 }
-                airDrop= Airdrop.load(readFile.contractAddress, readFile.web3j, credentials,
-                        GasPrice,
-                        readFile.GAS_LIMIT.add(
-                                new BigInteger(PropertyReader.get("everyGas","bitstd.properties")).multiply(new BigInteger(String.valueOf(addArray.size())))));
-                Date d2=new Date();
-
-                TransactionReceipt balanceOf =airDrop.dataMigration(oldTokenContractAddress,newTokenContractAddress,
-                        addArray,gross,BigInteger.ZERO).sendAsync().get();
-                bos.add(true);
-                long diff = d2.getTime() - new Date().getTime();//这样得到的差值是微秒级别
-                result="hashId=" + balanceOf.getTransactionHash()+",耗时："+diff/1000+"s";
+                String hashId=TransactionData.dataMigration("0x"+fromAddress,credentials,oldTokenContractAddress,newTokenContractAddress,readFile.contractAddress,addArray,GasPrice,gross);
+                result="hashId=" + hashId;
 
             }catch (Exception e){
                 if (gross==BigInteger.ZERO){
@@ -287,7 +273,7 @@ public class airdropServiceImpl implements airdropService {
             }
 
         }
-        readFile.write(result,PropertyReader.get("WriteAddress", "bitstd.properties"));
+        readFile.write("创建时间："+readFile.df.format(d1),PropertyReader.get("WriteAddress", "bitstd.properties"));
         return null;
     }
 }
