@@ -3,6 +3,7 @@ package com.airdrop.ETHenum;
 
 
 public enum function {
+    drop("0x1d833aae"),
     airdrop("0x1d833aae"),
     airdropValues("0x7d488464"),
     dataMigration("0x5bb2d425");

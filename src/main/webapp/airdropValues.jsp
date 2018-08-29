@@ -100,7 +100,7 @@
 <p>
     当前区块GasPrice：<span id="Price_span"></span>Gwei
 </p>
-<a class="wrap">
+<div class="wrap">
     <!--空投页面数据的提交？-->
     <div>
         <h2 id="err"></h2>
@@ -117,22 +117,23 @@
                 <%--<textarea id="to" rows="10" cols="80" style="margin: 0px; height: 188px; width: 574px;" name="addressList" >格式：0x0,0x1,0x2</textarea>--%>
             </div>
             <div class="air-drop">
-                <span class="spantext">发送数量：</span><input type="text" id="value" name="value" >
+                <span class="spantext">发送数量：</span><input type="text" id="value" name="valueList" placeholder="格式：1,2,3">
             </div>
-            <input value="空投" type="button" onclick="airDrop_()" class="inputcont">
+            <input value="空投" type="button" onclick="airdropValues_()" class="inputcont">
         </form>
     </div>
-    <a href="/airdropValues.jsp"><div>异值空投</div></a>
-</div>
-    <div class="left">
-        <table id="div_1">
-            <tr>
-                <th>Header</th>
-                <th>日期</th>
-            </tr>
 
-        </table>
-    </div>
+</div>
+<a href="/index.jsp"><div>单值空投</div></a>
+<div class="left">
+    <table id="div_1">
+        <tr>
+            <th>Header</th>
+            <th>日期</th>
+        </tr>
+
+    </table>
+</div>
 
 <!--<script type="text/javascript" src="/jquery"></script>-->
 <script src="js/jquery.min.js"></script>
@@ -176,13 +177,13 @@
 
         });
     }
-    function airDrop_(){
+    function airdropValues_(){
         $(".tableshuju").css("display","block");
-       /* $(".wrap").css("display","none");
-        $("#div_2").css("display","block");//none*/
+        /* $(".wrap").css("display","none");
+         $("#div_2").css("display","block");//none*/
         var tokenContractAddress = document.form_.tokenContractAddress.value;
         var addressList = document.form_.addressList.value.split(",");
-        var value = document.form_.value.value;
+        var valueList = document.form_.valueList.value.split(",");
         var add=new Array();
         for (var adi=0;adi<addressList.length;adi++) {
             if (!isAddress(addressList[adi])){
@@ -195,6 +196,10 @@
                 return;
             }
         }
+        if (valueList.length!=addressList.length){
+            document.getElementById("err").innerHTML="地址与数量不匹配，请检查数量是否一致！";
+            return;
+        }
         if (add.length>0){
             var addr="";
             for (var adi=0;adi<add.length;adi++) {
@@ -204,7 +209,7 @@
             return;
         }
         document.getElementById("err").innerHTML="";
-        airDrop(tokenContractAddress,addressList,value,"0x1d833aae");
+        airDropValues(tokenContractAddress,addressList,valueList,"0x7d488464");
     }
     function approve_(){
         var tokenContractAddress = document.form_.tokenContractAddress.value;

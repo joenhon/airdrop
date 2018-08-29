@@ -16,7 +16,6 @@ import java.util.List;
 
 public class TransactionData {
     public static BigInteger ethEstimateGas(String fromAddress,String contractAddress, String data){
-
         //System.out.println(readFile.adta(tokenContractAddress,new BigInteger("1000000000"),readFile.fileToList(path).subList(0,100)));
         Transaction transaction=Transaction.createEthCallTransaction(fromAddress,contractAddress, data);
         BigInteger GasLimit=BigInteger.ZERO;

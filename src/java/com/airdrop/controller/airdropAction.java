@@ -1,5 +1,6 @@
 package com.airdrop.controller;
 import com.airdrop.service.airdropService;
+import com.airdrop.utils.readFile;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -7,6 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.EthSendRawTransaction;
+import org.web3j.protocol.core.methods.response.EthSendTransaction;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -24,22 +29,22 @@ public class airdropAction {
     private airdropService airService;
 
     @RequestMapping("airDrop")
-    public String airDrop(@RequestParam(value="path")MultipartFile path,@RequestParam(value="addressPath")MultipartFile addressPath, HttpServletRequest request){
+    public String airDrop(MultipartFile path,MultipartFile addressPath, HttpServletRequest request){
         if (request.getParameter("tokenContractAddress")==null){
             return "error";
         }
         String tokenContractAddress =request.getParameter("tokenContractAddress");
-        /*if (request.getParameter("path")==null){
+        if (request.getParameter("path")==null){
             return "error";
-        }*/
+        }
         String path_=File(path,request);
         if (request.getParameter("value")==null){
             return "error";
         }
         BigInteger value=new BigInteger(request.getParameter("value"));
-        /*if (request.getParameter("addressPath")==null){
+        if (request.getParameter("addressPath")==null){
             return "error";
-        }*/
+        }
         String addressPath_=File(addressPath,request);
         String pwd=request.getParameter("pwd");
         if (request.getParameter("everyGas")==null){
@@ -51,9 +56,11 @@ public class airdropAction {
         }
         BigInteger GasPrice=new BigInteger(request.getParameter("GasPrice"));
         HttpSession session=request.getSession();
+
         try {
             session.setAttribute("hash",airService.airDrop_(tokenContractAddress,path_,value,addressPath_,pwd,everyGas,GasPrice));
         }catch (Exception e){
+            System.out.println(e.getMessage());
             e.printStackTrace();
             return "error";
         }
