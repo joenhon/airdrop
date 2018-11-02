@@ -5,10 +5,12 @@ import com.airdrop.service.impl.airdropServiceImpl;
 import org.web3j.crypto.*;
 import org.web3j.protocol.ObjectMapperFactory;
 import org.web3j.protocol.admin.Admin;
+import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.JsonRpc2_0Web3j;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.protocol.rx.Web3jRx;
@@ -25,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 
 public class Test {
     public static void main(String[] ages) throws ExecutionException, InterruptedException, IOException, CipherException {
+
         String path = PropertyReader.get("path","bitstd.properties");
         String tokenContractAddress = PropertyReader.get("tokenContractAddress","bitstd.properties");
         //创建观察

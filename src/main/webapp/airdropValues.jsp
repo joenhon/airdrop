@@ -113,7 +113,7 @@
             <input value="授权" type="button" onclick="approve_()" class="inputcont">
 
             <div class="air-drop">
-                <span class="spantext">收币地址文件：</span><input type="text" id="to" name="addressList" placeholder="格式：0x0,0x1,0x2" >
+                <span class="spantext">收币地址：</span><input type="text" id="to" name="addressList" placeholder="格式：0x0,0x1,0x2" >
                 <%--<textarea id="to" rows="10" cols="80" style="margin: 0px; height: 188px; width: 574px;" name="addressList" >格式：0x0,0x1,0x2</textarea>--%>
             </div>
             <div class="air-drop">
