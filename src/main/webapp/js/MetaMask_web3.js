@@ -1,9 +1,9 @@
 window.addEventListener('load', function() {
-
     // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-    if (typeof web3 !== 'undefined') {
+    if (typeof window.web3 !== 'undefined' || typeof window.ethereum !== 'undefined') {
         // Use Mist/MetaMask's provider
-        window.web3 = new Web3(web3.currentProvider);
+        const provider = window['ethereum'] || window.web3.currentProvider
+        // window.web3 = new Web3(web3.currentProvider);
     } else {
         console.log('No web3? You should consider trying MetaMask!')
         // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
@@ -14,13 +14,10 @@ window.addEventListener('load', function() {
     // Now you can start your app & access web3 freely:
     startApp();
 })
-
-// =================================================
-
+// ================================================
 function startApp(){
-    showNetwork();
+    //showNetwork();
     showGasPrice();
-    showAccounts();
 }
 
 // =================================================
@@ -37,21 +34,21 @@ function showNetwork() {
                 case "1":
                     output = "主网";
                     document.contract="0xbc4c5ebd704251053b68e5c39ad2bcfa3ada1520";
-                    document.HTTP="https://mainnet.infura.io/v3/30a5e75585ae4636b1c53d216ede9847";
+                    document.HTTP="https://mainnet.infura.io/v3/80f1c00345214da4bdbc4d02f35fb265";
                     break
                 case "2":
                     output = "morden";
-                    document.HTTP="https://kovan.infura.io/v3/30a5e75585ae4636b1c53d216ede9847";
+                    document.HTTP="https://kovan.infura.io/v3/80f1c00345214da4bdbc4d02f35fb265";
                     break
                 case "3":
                     output = "ropsten";
                     document.contract="0x989eA41FF29769a962291d15FC60a7d8169c6A24"
-                    document.HTTP="https://ropsten.infura.io/v3/30a5e75585ae4636b1c53d216ede9847";
+                    document.HTTP="https://ropsten.infura.io/v3/80f1c00345214da4bdbc4d02f35fb265";
                     break
                 case "4":
                     output = "rinkeby";
                     document.contract="0x4FAdaa24a6Afcd0a066D74b7D697677BA842f6eE";
-                    document.HTTP="https://rinkeby.infura.io/v3/30a5e75585ae4636b1c53d216ede9847";
+                    // document.HTTP="https://rinkeby.infura.io/v3/80f1c00345214da4bdbc4d02f35fb265";
                     break
                 default:
                     output = "unknown network = "+res;
@@ -64,26 +61,18 @@ function showNetwork() {
 })
 }
 function showAccounts() {
-    web3.eth.getAccounts((err, res) => {
-        var output = "";
-
-    if (!err==null) {
-        output = res.join("<br />");
-    } else {
-        output = "Error";
-    }
-    if (res.length>0){
-        document.getElementById('accounts').innerHTML = "当前用户：" + res + "<br />";
-        document.account=res;
-    }else{
-        alert("请登录MetaMask并刷新页面！");
-    }
-
-
-})
+    window.ethereum.enable().catch(function (reason) {
+        alert("链接请求被拒绝");
+    }).then(function (accounts) {
+        if (accounts.length>0){
+            document.getElementById('accounts').innerHTML = "当前用户：" + accounts + "<br />";
+            document.account=accounts[0];
+        }
+    });
 }
+
 function showGasPrice() {
-    web3.eth.getGasPrice((err, res) => {
+    window.web3.eth.getGasPrice((err, res) => {
         var output = "";
 
     if (!err) {
@@ -97,7 +86,7 @@ function showGasPrice() {
 
 //签名事务发送
 function sendRawTransaction(data) {
-    var fromAccount = document.account[0];
+    var fromAccount = document.account;
 
     if (fromAccount != null && fromAccount.length > 0 &&
         data != null && data.length > 0
@@ -117,22 +106,30 @@ function sendRawTransaction(data) {
 }
 //估算GAS消耗
 function estimateGas(Tx){
-   return new Web3(new Web3.providers.HttpProvider(document.HTTP)).eth.estimateGas(Tx);
+    var method = 'eth_estimateGas';
+    const from = document.account;
+    const payload = {
+        method: method,
+        params: Tx,
+        from: from,
+    };
+    return window.ethereum.send(payload);
 }
 //发送交易
 function sendTransaction(message){
-    web3.eth.sendTransaction(message, (err, res) => {
+    window.ethereum.send(message,(err, res) => {
         var output = "";
-    if (!err) {
-        output += res;
-    } else {
-        output = "Error";
-    }
-    $("#div_1").append("<tr><td>"+output+"</td><td>"+Date()+"</td></tr>");
-})
+        if (!err) {
+            output += res;
+        } else {
+            output = "Error";
+        }
+        $("#div_1").append("<tr><td>"+output+"</td><td>"+Date()+"</td></tr>");
+    })
+    // web3.eth.sendTransaction(message, )
 }
 function airDrop(to,addressList,amount,fu) {
-    var fromAccount = document.account[0];
+    var fromAccount = document.account;
     var data = fu+airDropData(to,amount,addressList);
     // Use for example 2
 
@@ -142,54 +139,75 @@ function airDrop(to,addressList,amount,fu) {
         amount != null && amount.length > 0
     ) {
         // Example 1: Using the default MetaMask gas and gasPrice
-        var message = {to: document.contract, value: 0x0, data: data};
+        var message = {from:document.account,to: document.contract, value: 0x0, data: data};
         try{
-            var GasLimit=estimateGas(message);
+            var GasLimit=60000;//estimateGas(message);
         }catch (e){
             document.getElementById("err").innerHTML=e;
             return "交易失败！";
         }
-
-        message={to:document.contract, data: data, gas: Math.floor(GasLimit+GasLimit*0.1)};
+        var method = 'eth_sendTransaction';
+        message=[{from:document.account, to:document.contract, data: data, gas: Math.floor(GasLimit+GasLimit*0.1).toString(16)}];
+        const from = document.account;
+        const payload = {
+            method: method,
+            params: message,
+            from: from,
+        };
         // Example 2: Setting gas and gasPrice
         //var message = {from: fromAccount, to:to, value: web3.toWei(amount, 'ether'), gas: gas, gasPrice: gasPrice};
 
         // Example 3: Using the default account
         //web3.eth.defaultAccount = fromAccount;
         //var message = {to:to, value: web3.toWei(amount, 'ether')};
-        sendTransaction(message);
+        sendTransaction(payload);
 
     }
 }
 
 function airDropValues(to,addressList,amount,fu) {
-    var fromAccount = document.account[0];
+    var fromAccount = document.account;
     var data = fu+airDropValuesData(to,amount,addressList);
     if (
         to != null && to.length > 0 &&
         amount != null && amount.length > 0
     ) {
         // Example 1: Using the default MetaMask gas and gasPrice
-        var message = {to: document.contract, value: 0x0, data: data};
+        var message = {from:document.account,to: document.contract, value: 0x0, data: data};
         try{
             var GasLimit=estimateGas(message);
         }catch (e){
             document.getElementById("err").innerHTML=e;
             return "交易失败！";
         }
-        message={to:document.contract, data: data, gas: Math.floor(GasLimit+GasLimit*0.1)};
-        sendTransaction(message);
+        message=[{from:document.account,to:document.contract, data: data, gas: Math.floor(GasLimit+GasLimit*0.1).toString(16)}];
+
+        var method = 'eth_sendTransaction';
+        const from = document.account;
+        const payload = {
+            method: method,
+            params: message,
+            from: from,
+        };
+        sendTransaction(payload);
 
     }
 }
 
 function approve(tokenContractAddress,fu){
-    var fromAccount = document.account[0];
+    var fromAccount = document.account;
     var data = fu+approveData();
-    var message = {to:tokenContractAddress, data: data};
-    var GasLimit=estimateGas(message);
-    message={to:tokenContractAddress, data: data, gas: Math.floor(GasLimit+GasLimit*0.1)};
-    sendTransaction(message);
+    var message = {from:document.account,to:tokenContractAddress, data: data};
+    var GasLimit=8000;//estimateGas(message);
+    message=[{from:document.account,to:tokenContractAddress, data: data, gas: Math.floor(GasLimit+GasLimit*0.1).toString(16)}];
+    var method = 'eth_sendTransaction';
+    const from = document.account;
+    const payload = {
+        method: method,
+        params: message,
+        from: from,
+    };
+    sendTransaction(payload);
 }
 
 function toWei(val) {
@@ -270,7 +288,7 @@ function numberListRemake0x(valArray) {
 
 function remake0x(address){
     var output="";
-    if (address.lastIndexOf("0x") == 0 && address.length == "0xc387683bd495658b6ba02ca482a7c8614936df6a".length) {
+    if (address !== undefined && address.indexOf("0x") == 0 && address.length == "0xc387683bd495658b6ba02ca482a7c8614936df6a".length) {
         output=Hex(address.substring(2,address.length));
     }
     return output;

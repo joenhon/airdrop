@@ -100,6 +100,7 @@
 <p>
     当前区块GasPrice：<span id="Price_span"></span>Gwei
 </p>
+<input value="链接" type="button" onclick="showAccounts()" class="inputcont">
 <a class="wrap">
     <!--空投页面数据的提交？-->
     <div>
@@ -153,7 +154,7 @@
             console.log("没有连接节点！");
             $("[type=\"submit\"]").attr('disabled',true);
             $("h2").text("没有连接节点！").css("color","red");
-            $("#GasPrice").val(1);
+            $("#GasPrice").val(1.1);
         });
     }
     //gasPrice();
