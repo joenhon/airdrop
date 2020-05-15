@@ -28,6 +28,11 @@ public class airdropAction {
     @Resource(name = "airdropService")
     private airdropService airService;
 
+    @RequestMapping("/")
+    public String index(){
+        return "index";
+    }
+
     @RequestMapping("airDrop")
     public String airDrop(MultipartFile path,MultipartFile addressPath, HttpServletRequest request){
         if (request.getParameter("tokenContractAddress")==null){
